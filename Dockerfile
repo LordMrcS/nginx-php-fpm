@@ -2,11 +2,11 @@ FROM debian:12.12-slim
 
 # Let the container know that there is no tty
 ENV DEBIAN_FRONTEND noninteractive
-ENV NGINX_VERSION 1.27.1
-ENV PHP_V 8.3
+ENV NGINX_VERSION 1.29.8
+ENV PHP_V 8.4
 ENV php_conf /etc/php/${PHP_V}/fpm/php.ini
 ENV fpm_conf /etc/php/${PHP_V}/fpm/pool.d/www.conf
-ENV COMPOSER_VERSION 2.7.8
+ENV COMPOSER_VERSION 2.11.0
 
 #Installing base requirements
 RUN set -x \
@@ -15,9 +15,9 @@ RUN set -x \
     && apt-get install --no-install-recommends curl gcc make autoconf libc-dev zlib1g-dev pkg-config --no-install-suggests -q -y gnupg2 dirmngr wget apt-transport-https lsb-release ca-certificates \
 # Preparing external repositories
     && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
-    && echo "deb https://packages.sury.org/nginx/ bookworm main" >> /etc/apt/sources.list.d/nginx.list \
+    && echo "deb https://packages.sury.org/nginx/ trixie main" >> /etc/apt/sources.list.d/nginx.list \
     && wget -O /etc/apt/trusted.gpg.d/nginx.gpg https://packages.sury.org/nginx/apt.gpg \
-    && echo "deb https://packages.sury.org/php/ bookworm main" > /etc/apt/sources.list.d/php.list \
+    && echo "deb https://packages.sury.org/php/ trixie main" > /etc/apt/sources.list.d/php.list \
 # Installing requirements
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -q -y \
