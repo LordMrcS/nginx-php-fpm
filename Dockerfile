@@ -3,11 +3,11 @@ FROM debian:bullseye-slim
 LABEL maintainer="Colin Wilson colin@wyveo.com"
 
 # Let the container know that there is no tty
-ENV DEBIAN_FRONTEND noninteractive
-ENV NGINX_VERSION 1.23.17-1~bullseye
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NGINX_VERSION=1.23.17-1~bullseye
 ENV php_conf /etc/php/8.1/fpm/php.ini
 ENV fpm_conf /etc/php/8.1/fpm/pool.d/www.conf
-ENV COMPOSER_VERSION 2.11.1
+ENV COMPOSER_VERSION=2.9.5
 
 # Install Basic Requirements
 RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
