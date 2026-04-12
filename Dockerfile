@@ -8,8 +8,7 @@ ENV COMPOSER_VERSION=2.9.5
 
 RUN apk update && apk add --no-cache --verbose curl gcc make autoconf libc-dev zlib-dev pkgconfig wget ca-certificates bash
 
-RUN addgroup -g 82 -S www-data && \
-    adduser -u 82 -D -S -G www-data www-data
+RUN adduser -u 82 -D -S -G www-data www-data || true
 
 RUN apk add --no-cache --verbose nginx php${PHP_V}-fpm php${PHP_V}-cli php${PHP_V}-bcmath php${PHP_V}-common php${PHP_V}-opcache php${PHP_V}-mbstring php${PHP_V}-curl php${PHP_V}-gd php${PHP_V}-mysqli php${PHP_V}-zip php${PHP_V}-pgsql php${PHP_V}-intl php${PHP_V}-xml php${PHP_V}-ldap php${PHP_V}-pear
 
