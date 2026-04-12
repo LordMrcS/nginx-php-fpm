@@ -4,10 +4,10 @@ LABEL maintainer="Colin Wilson colin@wyveo.com"
 
 # Let the container know that there is no tty
 ENV DEBIAN_FRONTEND noninteractive
-ENV NGINX_VERSION 1.23.1-1~bullseye
+ENV NGINX_VERSION 1.23.17-1~bullseye
 ENV php_conf /etc/php/8.1/fpm/php.ini
 ENV fpm_conf /etc/php/8.1/fpm/pool.d/www.conf
-ENV COMPOSER_VERSION 2.4.4
+ENV COMPOSER_VERSION 2.11.1
 
 # Install Basic Requirements
 RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
@@ -60,8 +60,11 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
             php8.1-intl \
             php8.1-xml \
             php8.1-ldap \
+            php8.1-snmp \
+            php8.1-soap \
+            php8.1-xsl
             php-pear \
-    && pecl -d php_suffix=8.1 install -o -f redis memcached \
+    && pecl install -f redis-6.2.0 memcached-3.4.0 imagick 2>/dev/null || true \
     && mkdir -p /run/php \
     && pip install wheel \
     && pip install supervisor \
