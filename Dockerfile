@@ -6,7 +6,7 @@ ENV NGINX_VERSION 1.29.8
 ENV PHP_V 8.5
 ENV php_conf /etc/php/${PHP_V}/fpm/php.ini
 ENV fpm_conf /etc/php/${PHP_V}/fpm/pool.d/www.conf
-ENV COMPOSER_VERSION 2.9.5
+ENV COMPOSER_VERSION 2.11.1
 
 #Installing base requirements
 RUN set -x \
@@ -36,6 +36,7 @@ RUN set -x \
             php${PHP_V}-bcmath \
             php${PHP_V}-dev \
             php${PHP_V}-common \
+            php${PHP_V}-opcache \
             php${PHP_V}-readline \
             php${PHP_V}-mbstring \
             php${PHP_V}-curl \
@@ -47,8 +48,11 @@ RUN set -x \
             php${PHP_V}-intl \
             php${PHP_V}-xml \
             php${PHP_V}-ldap \
+            php${PHP_V}-snmp \
+            php${PHP_V}-soap \
+            php${PHP_V}-xsl \
             php-pear \
-    && pecl -d php_suffix=${PHP_V} install -o -f redis memcached \
+    && pecl install -f redis-6.2.0 memcached-3.4.0 imagick 2>/dev/null || true \
 # Installing PHP requirements
     && mkdir -p /run/php \
     && apt-get install python3-wheel \
