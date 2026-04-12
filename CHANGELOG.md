@@ -1,3 +1,13 @@
+## [0.9.0] - 12-04-2026
+### Update
+- php version 8.5.5 - [https://www.php.net/ChangeLog-8.php](https://www.php.net/ChangeLog-8.php)
+- default.conf update
+- Dockerfile update
+- README update
+- index.php update
+- supervisord.conf update
+
+
 ## [0.8.0] - 12-04-2026
 ### Update
 - nginx version 1.29.8 - [http://nginx.org/en/CHANGES](http://nginx.org/en/CHANGES)
