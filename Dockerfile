@@ -10,7 +10,6 @@ ENV COMPOSER_VERSION 2.9.5
 
 #Installing base requirements
 RUN set -x \
-    && ln -s /bin/sed /usr/bin/sed \
     && apt-get update \
     && apt-get install --no-install-recommends curl gcc make autoconf libc-dev zlib1g-dev pkg-config --no-install-suggests -q -y gnupg2 dirmngr wget apt-transport-https lsb-release ca-certificates \
 # Preparing external repositories
