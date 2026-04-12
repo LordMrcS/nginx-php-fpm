@@ -7,10 +7,13 @@ This is a Dockerfile to build an alpine based container image running nginx and 
 
 ### Versioning
 | Docker Tag | GitHub Branch | Nginx Version | PHP Version | Base Image | Composer 
-|------------|--------------|---------------|-------------|------------|----------|
+|------------|--------------|---------------|-------------|-------------|----------|
 | latest     | master       | 1.29.8        | 8.5        | Alpine edge | 2.9.5    |
-| php84      | php84        | 1.28.3        | 8.4        | Alpine 3.20| 2.9.5    |
-| php85     | php85        | 1.26.2        | 8.5        | Debian 12  | 2.9.5    |
+|php85-bookworm| php85       | 1.29.8        | 8.5        | Debian 12   | 2.9.5    |
+| php84      | php84        | 1.29.8        | 8.4        | Debian 12   | 2.9.5    |
+| php83      | php83        | 1.26.1        | 8.3        | Debian 12   | 2.7.7    |
+| php82      | php82        | 1.25.1        | 8.2        | Debian 12   | 2.5.8    |
+| php81      | php81        | 1.23.1        | 8.1        | Debian 11   | 2.4.4    |
 
 
 ## Building from source
