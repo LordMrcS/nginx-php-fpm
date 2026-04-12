@@ -36,7 +36,6 @@ RUN set -x \
             php${PHP_V}-bcmath \
             php${PHP_V}-dev \
             php${PHP_V}-common \
-            php${PHP_V}-opcache \
             php${PHP_V}-readline \
             php${PHP_V}-mbstring \
             php${PHP_V}-curl \
