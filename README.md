@@ -1,17 +1,18 @@
-[![nginx 1.26.1](https://img.shields.io/badge/nginx-1.26.1-brightgreen.svg?&logo=nginx&logoColor=white&style=for-the-badge)](https://nginx.org/en/CHANGES) 
-[![php 8.3.8](https://img.shields.io/badge/php--fpm-8.3.8-blue.svg?&logo=php&logoColor=white&style=for-the-badge)](https://www.php.net/ChangeLog-8.php#8.3.8)
+[![nginx 1.27.1](https://img.shields.io/badge/nginx-1.27.1-brightgreen.svg?&logo=nginx&logoColor=white&style=for-the-badge)](https://nginx.org/en/CHANGES) 
+[![php 8.3.10](https://img.shields.io/badge/php--fpm-8.3.10-blue.svg?&logo=php&logoColor=white&style=for-the-badge)](https://www.php.net/ChangeLog-8.php#8.3.10)
 [![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?&style=for-the-badge)](https://github.com/LordMrcS/nginx-php-fpm/blob/master/LICENSE)
 
 ## Introduction
-This is a Dockerfile to build a debian based container image running nginx and php-fpm 8.3.x / 8.2.x & Composer.
+This is a Dockerfile to build a debian based container image running nginx and php-fpm 8.3.x / 8.2.x / 8.1.x & Composer.
 
 ### Versioning
-| Docker Tag | GitHub Release | Nginx Version | PHP Version | Debian Version | Composer
-|-----|-------|-----|--------|--------|------|
-| latest | master Branch | 1.26.1 | 8.3.8 | bookworm | 2.7.7 |
-| php82 | php82 Branch | 1.25.1 | 8.2.8 | bookwork | 2.5.8 |
-| php81 | php81 Branch | 1.23.1 | 8.1.13 | bullseye | 2.4.4 |
-| php74 | php74 Branch | 1.21.6 | 7.4.28 | buster | 2.0.13 |
+| Docker Tag | GitHub Release | Nginx Version | PHP Version | Debian Version | Composer 
+|------------|----------------|---------------|-------------|----------------|----------|
+| latest     | master Branch  | 1.27.1        | 8.3.10      | bookworm       | 2.7.8    |
+| php83      | php83 Branch   | 1.27.1        | 8.3.10      | bookworm       | 2.7.8    |
+| php82      | php82 Branch   | 1.25.2        | 8.2.9       | bookworm       | 2.5.8    |
+| php81      | php81 Branch   | 1.21.6        | 8.1.3       | bullseye       | 2.2.7    |
+| php74      | php74 Branch   | 1.21.6        | 7.4.28      | buster         | 2.0.13   |
 
 
 ## Building from source
