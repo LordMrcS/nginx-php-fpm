@@ -10,13 +10,11 @@ RUN apk update && apk add --no-cache --verbose curl gcc make autoconf libc-dev z
 
 RUN adduser -u 82 -D -S -G www-data www-data || true
 
-RUN apk add --no-cache --verbose nginx php${PHP_V} php${PHP_V}-fpm php${PHP_V}-cli php${PHP_V}-curl php${PHP_V}-gd php${PHP_V}-mysqli php${PHP_V}-zip php${PHP_V}-pgsql php${PHP_V}-intl php${PHP_V}-xml php${PHP_V}-ldap
+RUN apk add --no-cache --verbose nginx php${PHP_V} php${PHP_V}-fpm php${PHP_V}-cli php${PHP_V}-curl php${PHP_V}-gd php${PHP_V}-mysqli php${PHP_V}-zip php${PHP_V}-pgsql php${PHP_V}-intl php${PHP_V}-xml php${PHP_V}-ldap php${PHP_V}-phar
 
 RUN apk add --no-cache --verbose perl nano zip unzip git
 
 RUN apk add --no-cache --verbose libmemcached-dev imagemagick-dev supervisor python3 py3-pip || echo "Optional packages failed, continuing..."
-
-RUN pecl install -f redis || echo "PECL redis failed, continuing..."
 
 RUN mkdir -p /run/php && \
     rm -rf /etc/nginx/sites-enabled/default
@@ -35,8 +33,6 @@ RUN sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php${PHP_V}/php-fpm
     sed -i -e "s/pm.max_spare_servers = 3/pm.max_spare_servers = 4/g" ${PHP_FPM} && \
     sed -i -e "s/pm.max_requests = 500/pm.max_requests = 200/g" ${PHP_FPM} && \
     sed -i -e "s/^;clear_env = no$/clear_env = no/" ${PHP_FPM}
-
-RUN echo "extension=redis.so" > /etc/php${PHP_V}/conf.d/redis.ini
 
 RUN curl -o /tmp/composer-setup.php https://getcomposer.org/installer && \
     curl -o /tmp/composer-setup.sig https://composer.github.io/installer.sig && \
