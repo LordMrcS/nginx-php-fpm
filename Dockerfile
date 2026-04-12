@@ -1,7 +1,7 @@
 FROM alpine:edge
 
 ENV NGINX_VERSION=1.29.8
-ENV PHP_V=8.4
+ENV PHP_V=8.5
 ENV php_conf=/etc/php${PHP_V}/php.ini
 ENV fpm_conf=/etc/php${PHP_V}/php-fpm.d/www.conf
 ENV COMPOSER_VERSION=2.9.5
@@ -10,7 +10,7 @@ RUN apk update && apk add --no-cache --verbose curl gcc make autoconf libc-dev z
 
 RUN adduser -u 82 -D -S -G www-data www-data || true
 
-RUN apk add --no-cache --verbose nginx php${PHP_V}-fpm php${PHP_V}-cli php${PHP_V}-bcmath php${PHP_V}-common php${PHP_V}-opcache php${PHP_V}-mbstring php${PHP_V}-curl php${PHP_V}-gd php${PHP_V}-mysqli php${PHP_V}-zip php${PHP_V}-pgsql php${PHP_V}-intl php${PHP_V}-xml php${PHP_V}-ldap php${PHP_V}-pear
+RUN apk add --no-cache --verbose nginx php${PHP_V} php${PHP_V}-curl php${PHP_V}-gd php${PHP_V}-mysqli php${PHP_V}-zip php${PHP_V}-pgsql php${PHP_V}-intl php${PHP_V}-xml php${PHP_V}-ldap
 
 RUN apk add --no-cache --verbose perl nano zip unzip git
 
