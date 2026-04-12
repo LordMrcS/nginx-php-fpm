@@ -6,10 +6,11 @@
 This is a Dockerfile to build an alpine based container image running nginx and php-fpm 8.5.x & Composer.
 
 ### Versioning
-| Docker Tag | GitHub Release | Nginx Version | PHP Version | Base Image | Composer 
-|------------|----------------|---------------|-------------|------------|----------|
-| latest     | master Branch  | 1.29.8        | 8.5         | Alpine edge| 2.9.5    |
-| alpine     | migrate-to-alpine Branch | 1.29.8 | 8.5   | Alpine edge| 2.9.5    |
+| Docker Tag | GitHub Branch | Nginx Version | PHP Version | Base Image | Composer 
+|------------|--------------|---------------|-------------|------------|----------|
+| latest     | master       | 1.29.8        | 8.5        | Alpine edge | 2.9.5    |
+| php84      | php84        | 1.28.3        | 8.4        | Alpine 3.20| 2.9.5    |
+| php85     | php85        | 1.26.2        | 8.5        | Debian 12  | 2.9.5    |
 
 
 ## Building from source
