@@ -1,14 +1,19 @@
-[![Docker Hub; wyveo/nginx-php-fpm](https://img.shields.io/badge/docker%20hub-wyveo%2Fnginx--php--fpm-blue.svg?&logo=docker&style=for-the-badge)](https://hub.docker.com/r/wyveo/nginx-php-fpm/) [![](https://badges.weareopensource.me/docker/pulls/wyveo/nginx-php-fpm?style=for-the-badge)](https://hub.docker.com/r/wyveo/nginx-php-fpm/) [![](https://img.shields.io/docker/image-size/wyveo/nginx-php-fpm/latest?style=for-the-badge)](https://hub.docker.com/r/wyveo/nginx-php-fpm/) [![nginx 1.23.1](https://img.shields.io/badge/nginx-1.23.1-brightgreen.svg?&logo=nginx&logoColor=white&style=for-the-badge)](https://nginx.org/en/CHANGES) [![php 8.1.9](https://img.shields.io/badge/php--fpm-8.1.9-blue.svg?&logo=php&logoColor=white&style=for-the-badge)](https://secure.php.net/releases/8_1_9.php) [![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?&style=for-the-badge)](https://github.com/wyveo/nginx-php-fpm/blob/master/LICENSE)
+[![nginx 1.23.17](https://img.shields.io/badge/nginx-1.23.17-brightgreen.svg?&logo=nginx&logoColor=white&style=for-the-badge)](https://nginx.org/en/CHANGES)
+[![php 8.1](https://img.shields.io/badge/php--fpm-8.1-blue.svg?&logo=php&logoColor=white&style=for-the-badge)](https://www.php.net/ChangeLog-8.php#8.1)
+[![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?&style=for-the-badge)](https://github.com/LordMrcS/nginx-php-fpm/blob/master/LICENSE)
 
 ## Introduction
-This is a Dockerfile to build a debian based container image running nginx and php-fpm 8.1.x / 8.0.x / 7.4.x / 7.3.x / 7.2.x / 7.1.x / 7.0.x & Composer.
+This is a Dockerfile to build a Debian based container image running nginx and php-fpm 8.1.x & Composer.
 
 ### Versioning
-| Docker Tag | GitHub Release | Nginx Version | PHP Version | Debian Version | Composer
-|-----|-------|-----|--------|--------|------|
-| latest | master Branch |1.23.1 | 8.1.13 | bullseye | 2.4.4 |
-| php81 | php81 Branch |1.21.6 | 8.1.3 | bullseye | 2.2.7 |
-| php74 | php74 Branch |1.21.6 | 7.4.28 | buster | 2.0.13 |
+| Docker Tag | GitHub Branch | Nginx Version | PHP Version | Debian Version | Composer
+|------------|--------------|---------------|-------------|--------------|----------|
+| latest     | master       | 1.29.8        | 8.5        | Alpine edge  | 2.9.5     |
+|php85-bookworm| php85        | 1.29.8        | 8.5        | Debian 13   | 2.9.5     |
+| php84      | php84        | 1.29.8        | 8.4        | Debian 12   | 2.9.5     |
+| php83      | php83        | 1.28.1        | 8.3        | Debian 12   | 2.9.5     |
+| php82      | php82        | 1.26.4        | 8.2        | Debian 12   | 2.9.5     |
+| php81      | php81        | 1.23.17       | 8.1        | Debian 11   | 2.9.5     |
 
 
 ## Building from source
@@ -26,16 +31,24 @@ $ docker build -t nginx-php-fpm:php81 . # PHP 8.1.x
 
 ## Pulling from Docker Hub
 ```
-$ docker pull ghcr.io/lordmrcs/nginx-php-fpm:master
+$ docker pull mrcs2000/nginx-php-fpm-ldap
+```
+
+## Pulling from Github Container Registry
+```
+$ docker pull ghcr.io/lordmrcs/nginx-php-fpm:php81
 ```
 
 ## Running
 To run the container:
 ```
-$ sudo docker run -d ghcr.io/lordmrcs/nginx-php-fpm:master
+$ sudo docker run -d ghcr.io/lordmrcs/nginx-php-fpm:php81
 ```
 
 Default web root:
 ```
 /usr/share/nginx/html
 ```
+
+---
+Forked from [wyveo/nginx-php-fpm](https://github.com/wyveo/nginx-php-fpm)
