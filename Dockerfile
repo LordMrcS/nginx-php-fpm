@@ -2,11 +2,11 @@ FROM debian:12.6-slim
 
 # Let the container know that there is no tty
 ENV DEBIAN_FRONTEND noninteractive
-ENV NGINX_VERSION 1.26.1
+ENV NGINX_VERSION 1.28.1
 ENV PHP_V 8.3
 ENV php_conf /etc/php/${PHP_V}/fpm/php.ini
 ENV fpm_conf /etc/php/${PHP_V}/fpm/pool.d/www.conf
-ENV COMPOSER_VERSION 2.7.7
+ENV COMPOSER_VERSION 2.11.1
 
 #Installing base requirements
 RUN set -x \
@@ -48,8 +48,11 @@ RUN set -x \
             php${PHP_V}-intl \
             php${PHP_V}-xml \
             php${PHP_V}-ldap \
+            php${PHP_V}-snmp \
+            php${PHP_V}-soap \
+            php${PHP_V}-xsl \
             php-pear \
-    && pecl -d php_suffix=${PHP_V} install -o -f redis memcached \
+    && pecl install -f redis-6.2.0 memcached-3.4.0 imagick 2>/dev/null || true \
 # Installing PHP requirements
     && mkdir -p /run/php \
     && apt-get install python3-wheel \
