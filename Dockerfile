@@ -6,7 +6,7 @@ ENV NGINX_VERSION 1.29.8
 ENV PHP_V 8.5
 ENV php_conf /etc/php/${PHP_V}/fpm/php.ini
 ENV fpm_conf /etc/php/${PHP_V}/fpm/pool.d/www.conf
-ENV COMPOSER_VERSION 2.11.0
+ENV COMPOSER_VERSION 2.9.5
 
 #Installing base requirements
 RUN set -x \

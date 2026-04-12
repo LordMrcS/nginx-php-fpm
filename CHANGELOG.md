@@ -1,6 +1,7 @@
 ## [0.9.0] - 12-04-2026
 ### Update
 - php version 8.5.5 - [https://www.php.net/ChangeLog-8.php](https://www.php.net/ChangeLog-8.php)
+- composer version 2.9.5 [https://getcomposer.org/download/](https://getcomposer.org/download/)
 - default.conf update
 - Dockerfile update
 - README update
