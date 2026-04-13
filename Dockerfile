@@ -17,7 +17,7 @@ RUN apk add --no-cache --verbose perl nano zip unzip git
 
 RUN apk add --no-cache --verbose libmemcached-dev imagemagick-dev supervisor python3 py3-pip || echo "Optional packages failed, continuing..."
 
-RUN mkdir -p /run/php && rm -rf /etc/nginx/sites-enabled/default
+RUN mkdir -p /run/php
 
 RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" ${PHP_INI} && \
     sed -i -e "s/memory_limit\s*=\s*.*/memory_limit = 256M/g" ${PHP_INI} && \
@@ -44,7 +44,8 @@ COPY ./supervisord.conf /etc/supervisord.conf
 COPY ./supervisor_stdout.py /usr/bin/supervisor_stdout.py
 RUN chmod o+x /usr/bin/supervisor_stdout.py
 
-COPY ./default.conf /etc/nginx/conf.d/default.conf
+RUN rm -rf /etc/nginx/conf.d/default.conf /etc/nginx/sites-enabled/default
+COPY ./default.conf /etc/nginx/http.d/default.conf
 
 COPY html /usr/share/nginx/html
 
