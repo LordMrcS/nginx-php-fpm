@@ -10,7 +10,7 @@ ENV COMPOSER_VERSION=2.9.5
 #Installing base requirements
 RUN set -x \
     && apt-get update \
-    && apt-get install --no-install-recommends curl gcc make autoconf libc-dev zlib1g-dev pkg-config --no-install-suggests -q -y gnupg2 dirmngr wget apt-transport-https lsb-release ca-certificates \
+    && apt-get install --no-install-recommends curl gcc make autoconf libc-dev zlib1g-dev pkg-config libzip-dev libmemcached-dev libsodium-dev --no-install-suggests -q -y gnupg2 dirmngr wget apt-transport-https lsb-release ca-certificates \
 # Preparing external repositories
     && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
     && echo "deb https://packages.sury.org/nginx/ trixie main" >> /etc/apt/sources.list.d/nginx.list \
@@ -50,7 +50,9 @@ RUN set -x \
             php${PHP_V}-soap \
             php${PHP_V}-xsl \
             php-pear \
-    && pecl install -f redis-6.2.0 memcached-3.4.0 imagick 2>/dev/null || true \
+    php${PHP_V}-redis \
+    php${PHP_V}-memcached \
+    php${PHP_V}-imagick \
 # Installing PHP requirements
     && mkdir -p /run/php \
     && apt-get install python3-wheel \
