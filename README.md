@@ -63,25 +63,6 @@ Redis and Memcached classes and an Imagick PNG round trip through PHP-FPM.
 
 This migration applies to `master`; the other branches retain their installers.
 
-## Publish branch images to Docker Hub
-
-In GitHub Actions, open **Publish non-master branches to Docker Hub**, select
-`master` as the workflow branch, and click **Run workflow**. One manual run
-builds and tests all five maintained non-master branches, then pushes the tested
-images to `${DOCKER_USERNAME}/nginx-php-fpm-ldap` using these tags:
-
-| Source branch | Docker Hub tag |
-|---|---|
-| `php82` | `php82` |
-| `php83` | `php83` |
-| `php84` | `php84` |
-| `php85` | `php85` |
-| `alpine-8.5` | `alpine` |
-
-The workflow uses the existing `DOCKER_USERNAME` and `DOCKER_PASSWORD` repository
-secrets, pulls fresh upstream layers and builds without cache. It runs only when
-manually triggered. The existing `master` publishing workflow remains separate.
-
 ## Run
 
 ```sh
