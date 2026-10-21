@@ -1,115 +1,88 @@
-FROM debian:12.6-slim
+FROM php:8.2.35-fpm-bookworm
 
-# Let the container know that there is no tty
-ENV DEBIAN_FRONTEND=noninteractive
-ENV NGINX_VERSION=1.26.4
+ENV NGINX_VERSION=1.31.8
 ENV PHP_V=8.2
-ENV php_conf /etc/php/8.2/fpm/php.ini
-ENV fpm_conf /etc/php/8.2/fpm/pool.d/www.conf
-ENV COMPOSER_VERSION=2.9.5
+ENV php_conf=/etc/php/${PHP_V}/fpm/php.ini
+ENV fpm_conf=/etc/php/${PHP_V}/fpm/pool.d/www.conf
+ENV COMPOSER_VERSION=2.10.3
+ENV DOCUMENT_ROOT=/usr/share/nginx/html
+ENV REDIS_VERSION=6.3.0
+ENV MEMCACHED_VERSION=3.4.0
+ENV IMAGICK_VERSION=3.8.1
 
-#Installing base requirements
-RUN set -x \
-    && apt-get update \
-    && apt-get install --no-install-recommends curl gcc make autoconf libc-dev zlib1g-dev pkg-config --no-install-suggests -q -y gnupg2 dirmngr wget apt-transport-https lsb-release ca-certificates \
-# Preparing external repositories
-    && wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
-    && echo "deb https://packages.sury.org/nginx/ bookworm main" >> /etc/apt/sources.list.d/nginx.list \
-    && wget -O /etc/apt/trusted.gpg.d/nginx.gpg https://packages.sury.org/nginx/apt.gpg \
-    && echo "deb https://packages.sury.org/php/ bookworm main" > /etc/apt/sources.list.d/php.list \
-# Installing requirements
-    && apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -q -y \
-            apt-utils \
-            nano \
-            zip \
-            unzip \
-            python3-pip \
-            python3-setuptools \
-            git \
-            libmemcached-dev \
-            libmemcached11 \
-            libmagickwand-dev \
-            nginx \
-            php${PHP_V}-fpm \
-            php${PHP_V}-cli \
-            php${PHP_V}-bcmath \
-            php${PHP_V}-dev \
-            php${PHP_V}-common \
-            php${PHP_V}-opcache \
-            php${PHP_V}-readline \
-            php${PHP_V}-mbstring \
-            php${PHP_V}-curl \
-            php${PHP_V}-gd \
-            php${PHP_V}-imagick \
-            php${PHP_V}-mysql \
-            php${PHP_V}-zip \
-            php${PHP_V}-pgsql \
-            php${PHP_V}-intl \
-            php${PHP_V}-xml \
-            php${PHP_V}-ldap \
-            php${PHP_V}-snmp \
-            php${PHP_V}-soap \
-            php${PHP_V}-xsl \
-            php-pear \
-    && pecl install -f redis-6.2.0 memcached-3.4.0 imagick 2>/dev/null || true \
-# Installing PHP requirements
-    && mkdir -p /run/php \
-    && apt-get install python3-wheel \
-    && apt-get install supervisor \
-    && echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d \
-    && rm -rf /etc/nginx/sites-enabled/default \
-# Apply Configs
-    && sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" ${php_conf} \
-    && sed -i -e "s/memory_limit\s*=\s*.*/memory_limit = 256M/g" ${php_conf} \
-    && sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 100M/g" ${php_conf} \
-    && sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 100M/g" ${php_conf} \
-    && sed -i -e "s/variables_order = \"GPCS\"/variables_order = \"EGPCS\"/g" ${php_conf} \
-    && sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php/${PHP_V}/fpm/php-fpm.conf \
-    && sed -i -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" ${fpm_conf} \
-    && sed -i -e "s/pm.max_children = 5/pm.max_children = 4/g" ${fpm_conf} \
-    && sed -i -e "s/pm.start_servers = 2/pm.start_servers = 3/g" ${fpm_conf} \
-    && sed -i -e "s/pm.min_spare_servers = 1/pm.min_spare_servers = 2/g" ${fpm_conf} \
-    && sed -i -e "s/pm.max_spare_servers = 3/pm.max_spare_servers = 4/g" ${fpm_conf} \
-    && sed -i -e "s/pm.max_requests = 500/pm.max_requests = 200/g" ${fpm_conf} \
-    && sed -i -e "s/^;clear_env = no$/clear_env = no/" ${fpm_conf} \
-    && echo "extension=redis.so" > /etc/php/${PHP_V}/mods-available/redis.ini \
-    && echo "extension=memcached.so" > /etc/php/${PHP_V}/mods-available/memcached.ini \
-    && echo "extension=imagick.so" > /etc/php/${PHP_V}/mods-available/imagick.ini \
-    && ln -sf /etc/php/${PHP_V}/mods-available/redis.ini /etc/php/${PHP_V}/fpm/conf.d/20-redis.ini \
-    && ln -sf /etc/php/${PHP_V}/mods-available/redis.ini /etc/php/${PHP_V}/cli/conf.d/20-redis.ini \
-    && ln -sf /etc/php/${PHP_V}/mods-available/memcached.ini /etc/php/${PHP_V}/fpm/conf.d/20-memcached.ini \
-    && ln -sf /etc/php/${PHP_V}/mods-available/memcached.ini /etc/php/${PHP_V}/cli/conf.d/20-memcached.ini \
-    && ln -sf /etc/php/${PHP_V}/mods-available/imagick.ini /etc/php/${PHP_V}/fpm/conf.d/20-imagick.ini \
-    && ln -sf /etc/php/${PHP_V}/mods-available/imagick.ini /etc/php/${PHP_V}/cli/conf.d/20-imagick.ini \
-# Install Composer
-    && curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
-    && curl -o /tmp/composer-setup.sig https://composer.github.io/installer.sig \
-    && php -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }" \
-    && php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer --version=${COMPOSER_VERSION} \
-    && rm -rf /tmp/composer-setup.php \
-# Clean up
-    && rm -rf /tmp/pear \
-    && apt-get purge -y --auto-remove $buildDeps \
-    && apt-get clean \
-    && apt-get autoremove \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /var/lib/apt/cache/*
+# PHP is supplied by the official upstream image, never by distribution packages.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl wget bash tini nano zip unzip git supervisor python3 \
+    $PHPIZE_DEPS libfreetype6-dev libjpeg62-turbo-dev libpng-dev libwebp-dev \
+    libicu-dev libldap2-dev libpq-dev libzip-dev libsnmp-dev libxslt1-dev \
+    libmemcached-dev libsasl2-dev libmagickwand-dev libpcre2-dev libssl-dev zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Supervisor config
+RUN set -eux; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
+    docker-php-ext-install -j2 bcmath gd intl ldap mysqli pdo_mysql pdo_pgsql pgsql snmp soap xsl zip; \
+    pecl install redis-${REDIS_VERSION} memcached-${MEMCACHED_VERSION} imagick-${IMAGICK_VERSION}; \
+    docker-php-ext-enable redis memcached imagick; \
+    curl -fsSL "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" -o /tmp/nginx.tar.gz; \
+    echo "0652b760b3b772d2ec17b47c2fc15d9a95e6fe35cd5b877eadc1a62d9bc75af1  /tmp/nginx.tar.gz" | sha256sum -c -; \
+    tar -xzf /tmp/nginx.tar.gz -C /tmp; \
+    cd "/tmp/nginx-${NGINX_VERSION}"; \
+    ./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx \
+        --conf-path=/etc/nginx/nginx.conf --pid-path=/run/nginx.pid \
+        --error-log-path=/dev/stderr --http-log-path=/dev/stdout \
+        --user=www-data --group=www-data --with-http_ssl_module \
+        --with-http_v2_module --with-http_gzip_static_module --with-threads; \
+    make -j"$(nproc)"; \
+    make install; \
+    cd /; \
+    rm -rf "/tmp/nginx-${NGINX_VERSION}" /tmp/nginx.tar.gz; \
+    rm -rf /tmp/pear
+
+# Preserve Debian-style configuration mounts and versioned executable names.
+RUN set -eux; \
+    cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
+    mkdir -p "/etc/php/${PHP_V}" /run/php; \
+    ln -s "$PHP_INI_DIR" "/etc/php/${PHP_V}/fpm"; \
+    ln -s "$PHP_INI_DIR" "/etc/php/${PHP_V}/cli"; \
+    ln -s /usr/local/etc/php-fpm.d "$PHP_INI_DIR/pool.d"; \
+    ln -s /usr/local/etc/php-fpm.conf "$PHP_INI_DIR/php-fpm.conf"; \
+    ln -s /usr/local/bin/php "/usr/bin/php${PHP_V}"; \
+    ln -s /usr/local/sbin/php-fpm "/usr/sbin/php-fpm${PHP_V}"; \
+    printf '[www]\nlisten = /run/php/php%s-fpm.sock\nlisten.owner = www-data\nlisten.group = www-data\nlisten.mode = 0660\n' "$PHP_V" > /usr/local/etc/php-fpm.d/zzzz-listen.conf
+
+RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" ${php_conf} && \
+    sed -i -e "s/memory_limit\s*=\s*.*/memory_limit = 256M/g" ${php_conf} && \
+    sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 100M/g" ${php_conf} && \
+    sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 100M/g" ${php_conf} && \
+    sed -i -e "s/variables_order = \"GPCS\"/variables_order = \"EGPCS\"/g" ${php_conf}
+
+RUN sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /usr/local/etc/php-fpm.conf && \
+    sed -i -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" ${fpm_conf} && \
+    sed -i -e "s/pm.max_children = 5/pm.max_children = 4/g" ${fpm_conf} && \
+    sed -i -e "s/pm.start_servers = 2/pm.start_servers = 3/g" ${fpm_conf} && \
+    sed -i -e "s/pm.min_spare_servers = 1/pm.min_spare_servers = 2/g" ${fpm_conf} && \
+    sed -i -e "s/pm.max_spare_servers = 3/pm.max_spare_servers = 4/g" ${fpm_conf} && \
+    sed -i -e "s/pm.max_requests = 500/pm.max_requests = 200/g" ${fpm_conf} && \
+    sed -i -e "s/^;clear_env = no$/clear_env = no/" ${fpm_conf} && \
+    sed -i -e "s/^user = .*/user = www-data/" ${fpm_conf} && \
+    sed -i -e "s/^group = .*/group = www-data/" ${fpm_conf}
+
+RUN curl -fsSL -o /tmp/composer-setup.php https://getcomposer.org/installer && \
+    curl -fsSL -o /tmp/composer-setup.sig https://composer.github.io/installer.sig && \
+    php -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }" && \
+    php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer --version=${COMPOSER_VERSION} && \
+    rm -f /tmp/composer-setup.php /tmp/composer-setup.sig
+
 COPY ./supervisord.conf /etc/supervisord.conf
 COPY ./supervisor_stdout.py /usr/bin/supervisor_stdout.py
-RUN chmod o+x /usr/bin/supervisor_stdout.py
-
-# Override nginx's default config
+COPY ./nginx.conf /etc/nginx/nginx.conf
 COPY ./default.conf /etc/nginx/conf.d/default.conf
-
-# Override default nginx welcome page
 COPY html /usr/share/nginx/html
-
-# Copy Scripts
 COPY ./start.sh /start.sh
+RUN chmod +x /usr/bin/supervisor_stdout.py /start.sh
 
 EXPOSE 80
-
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget -q --spider http://localhost/ || exit 1
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/start.sh"]

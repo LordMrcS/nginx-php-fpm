@@ -24,7 +24,6 @@ jobs:
       with:
         TAG: |
           master:latest
-          php81:php81
           php74:php74
     - name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
