@@ -1,5 +1,16 @@
 .git
 .gitignore
+.github
 LICENSE
 README.md
 CHANGELOG.md
+.env
+.env.*
+.vscode
+.idea
+node_modules
+vendor
+__pycache__
+*.pyc
+*.log
+.DS_Store
