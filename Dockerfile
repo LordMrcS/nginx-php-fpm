@@ -6,6 +6,7 @@ ENV PHP_INI=/etc/php${PHP_V}/php.ini
 ENV PHP_FPM=/etc/php${PHP_V}/php-fpm.d/www.conf
 ENV PHP_FPM_CONF=/etc/php${PHP_V}/php-fpm.conf
 ENV COMPOSER_VERSION=2.10.3
+ENV PIE_VERSION=1.5.2
 ENV DOCUMENT_ROOT=/usr/share/nginx/html
 
 # PHP comes from the official upstream image; never install Alpine php packages.
@@ -66,6 +67,22 @@ RUN curl -fsSL -o /tmp/composer-setup.php https://getcomposer.org/installer && \
     php${PHP_V} -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }" && \
     php${PHP_V} /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer --version=${COMPOSER_VERSION} && \
     rm -f /tmp/composer-setup.php /tmp/composer-setup.sig
+
+ENV REDIS_VERSION=6.3.0
+ENV MEMCACHED_VERSION=3.4.0
+ENV IMAGICK_VERSION=3.8.1
+
+# Use upstream PIE for external extensions; bundled extensions use docker-php-ext-install.
+RUN curl -fsSL "https://github.com/php/pie/releases/download/${PIE_VERSION}/pie.phar" -o /usr/local/bin/pie && \
+    echo "fe70c59738cf56ec00a818cf9cb9593da171aac86f5f1f859995b8839dfd2cc7  /usr/local/bin/pie" | sha256sum -c - && \
+    chmod +x /usr/local/bin/pie && \
+    rm -f /usr/local/bin/pecl /usr/local/bin/pear /usr/local/bin/peardev && \
+    pie --version && \
+    apk add --no-cache --virtual .pie-build-deps $PHPIZE_DEPS automake libtool zlib-dev && \
+    pie install --no-interaction --make-parallel-jobs=2 "phpredis/phpredis:${REDIS_VERSION}" && \
+    pie install --no-interaction --make-parallel-jobs=2 "php-memcached/php-memcached:${MEMCACHED_VERSION}" && \
+    pie install --no-interaction --make-parallel-jobs=2 "imagick/imagick:${IMAGICK_VERSION}" && \
+    apk del .pie-build-deps
 
 COPY ./supervisord.conf /etc/supervisord.conf
 COPY ./supervisor_stdout.py /usr/bin/supervisor_stdout.py

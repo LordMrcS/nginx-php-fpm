@@ -10,3 +10,7 @@
   with the build. Historical branch rows must not claim unbuilt upgrades.
 - Build with fresh upstream layers and run tests/smoke.sh against the result.
 - Preserve existing configuration mount paths where possible; document migrations.
+
+- On master, use upstream PIE for external PHP extensions, with a pinned
+  version and verified artifact checksum. Do not reintroduce PECL/PEAR commands.
+  Bundled extensions continue to use docker-php-ext-install.

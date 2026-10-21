@@ -4,8 +4,8 @@
 
 ## Introduction
 
-This branch builds Nginx 1.31.8, PHP-FPM 8.5.12 and Composer 2.10.3 on
-Alpine 3.24.
+This branch builds Nginx 1.31.8, PHP-FPM 8.5.12, Composer 2.10.3 and
+PIE 1.5.2 on Alpine 3.24.
 
 ## Versions
 
@@ -37,7 +37,31 @@ sh tests/smoke.sh nginx-php-fpm:latest
 ```
 
 The smoke test checks exact versions, PHP extensions, service configuration and
-PHP rendering over HTTP.
+PHP rendering over HTTP, PIE availability and removal of the legacy installer
+commands.
+
+## PHP extension installer
+
+On `master`, [PIE](https://php.github.io/pie/) 1.5.2 replaces the inherited
+PECL/PEAR commands. Its upstream PHAR is pinned and verified against SHA-256.
+PIE installs these native extensions on `master`:
+
+| PIE package | Extension | Version |
+|---|---|---|
+| `phpredis/phpredis` | `redis` (phpredis) | 6.3.0 |
+| `php-memcached/php-memcached` | `memcached` | 3.4.0 |
+| `imagick/imagick` | `imagick` | 3.8.1 |
+
+Redis uses the native phpredis extension. Bundled extensions such as GD
+and LDAP continue to use `docker-php-ext-install`; external extensions use PIE
+package names and explicit versions.
+
+Build tools are installed while PIE compiles the extensions, then removed.
+PIE enables each extension automatically. Supporting ImageMagick and Memcached
+libraries remain in the runtime image. The smoke test exercises the native
+Redis and Memcached classes and an Imagick PNG round trip through PHP-FPM.
+
+This migration applies to `master`; the other branches retain their installers.
 
 ## Run
 
