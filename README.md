@@ -1,4 +1,4 @@
-[![nginx 1.29.8](https://img.shields.io/badge/nginx-1.29.8-brightgreen.svg?&logo=nginx&logoColor=white&style=for-the-badge)](https://nginx.org/en/CHANGES) 
+[![nginx 1.31.8](https://img.shields.io/badge/nginx-1.31.8-brightgreen.svg?&logo=nginx&logoColor=white&style=for-the-badge)](https://nginx.org/en/CHANGES)
 [![php 8.5](https://img.shields.io/badge/php--fpm-8.5-blue.svg?&logo=php&logoColor=white&style=for-the-badge)](https://www.php.net/ChangeLog-8.php#8.5)
 [![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?&style=for-the-badge)](https://github.com/LordMrcS/nginx-php-fpm/blob/master/LICENSE)
 
@@ -6,15 +6,25 @@
 This is a Dockerfile to build an alpine based container image running nginx and php-fpm 8.5.x & Composer.
 
 ### Versioning
-| Docker Tag | GitHub Branch | Nginx Version | PHP Version | Base Image | Composer 
+| Docker Tag | GitHub Branch | Nginx Version | PHP Version | Base Image | Composer
 |------------|--------------|---------------|-------------|-------------|----------|
-| latest     | master       | 1.29.8        | 8.5        | Alpine edge | 2.9.5    |
+| latest     | master       | 1.31.8        | 8.5.12     | PHP upstream / Alpine 3.24 | 2.10.3   |
 |php85-bookworm| php85       | 1.29.8        | 8.5        | Debian 13   | 2.9.5    |
 | php84      | php84        | 1.29.8        | 8.4        | Debian 12   | 2.9.5    |
 | php83      | php83        | 1.28.1        | 8.3        | Debian 12   | 2.9.5    |
 | php82      | php82        | 1.26.4        | 8.2        | Debian 12   | 2.9.5    |
 | php81      | php81        | 1.23.17       | 8.1        | Debian 11   | 2.9.5    |
 
+
+This project always uses upstream releases for Nginx, PHP and Composer:
+
+- PHP 8.5.12: official `php:8.5.12-fpm-alpine3.24` image.
+- Nginx 1.31.8: built from the upstream mainline source with SHA-256 verification.
+- Composer 2.10.3: upstream installer with SHA-384 verification.
+
+Alpine supplies supporting libraries and tools only. Versions are explicit and
+must be updated together with this README when new upstream releases are adopted.
+Other branch rows above are historical; this update applies to `master` only.
 
 ## Building from source
 To build from source you need to clone the git repo and run docker build:
@@ -25,9 +35,18 @@ $ cd nginx-php-fpm
 
 followed by
 ```
-$ docker build -t nginx-php-fpm:alpine . # PHP 8.5 (Alpine edge)
+$ docker build --pull --no-cache -t nginx-php-fpm:alpine . # Upstream PHP 8.5 / Alpine 3.24
 ```
 
+
+Validate the built image:
+```sh
+sh tests/smoke.sh nginx-php-fpm:alpine
+```
+
+PHP configuration remains accessible at `/etc/php85/php.ini` (a compatibility
+link to `/usr/local/etc/php/php.ini`). The `php85` and `php-fpm85` commands are
+also retained; upstream commands `php` and `php-fpm` are available.
 
 ## Pulling from Docker Hub
 ```
@@ -58,8 +77,8 @@ services:
     image: ghcr.io/lordmrcs/nginx-php-fpm:alpine
     volumes:
       - ./www/:/usr/share/nginx/html/
-      - ./default.conf:/etc/nginx/conf.d/default.conf
-      - ./php.ini:/etc/php/8.5/php.ini
+      - ./default.conf:/etc/nginx/http.d/default.conf
+      - ./php.ini:/etc/php85/php.ini
     ports:
       - 80:80
 ```

@@ -1,21 +1,46 @@
-FROM alpine:edge
+FROM php:8.5.12-fpm-alpine3.24
 
-ENV NGINX_VERSION=1.29.8
+ENV NGINX_VERSION=1.31.8
 ENV PHP_V=85
 ENV PHP_INI=/etc/php${PHP_V}/php.ini
 ENV PHP_FPM=/etc/php${PHP_V}/php-fpm.d/www.conf
 ENV PHP_FPM_CONF=/etc/php${PHP_V}/php-fpm.conf
-ENV COMPOSER_VERSION=2.9.5
+ENV COMPOSER_VERSION=2.10.3
+ENV DOCUMENT_ROOT=/usr/share/nginx/html
 
-RUN apk update && apk add --no-cache --verbose curl gcc make autoconf libc-dev zlib-dev pkgconfig wget ca-certificates bash
+# PHP comes from the official upstream image; never install Alpine php packages.
+RUN apk add --no-cache curl wget ca-certificates bash tini perl nano zip unzip git \
+    libmemcached-dev imagemagick-dev supervisor python3 py3-pip \
+    freetype libjpeg-turbo libpng libwebp icu-libs libldap libpq libzip pcre2 openssl zlib
 
-RUN adduser -u 82 -D -S -G www-data www-data || true
+RUN set -eux; \
+    apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
+        freetype-dev libjpeg-turbo-dev libpng-dev libwebp-dev icu-dev \
+        openldap-dev postgresql-dev libzip-dev pcre2-dev openssl-dev zlib-dev linux-headers; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
+    docker-php-ext-install -j"$(nproc)" gd intl ldap mysqli pgsql zip; \
+    curl -fsSL "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" -o /tmp/nginx.tar.gz; \
+    echo "0652b760b3b772d2ec17b47c2fc15d9a95e6fe35cd5b877eadc1a62d9bc75af1  /tmp/nginx.tar.gz" | sha256sum -c -; \
+    tar -xzf /tmp/nginx.tar.gz -C /tmp; \
+    cd "/tmp/nginx-${NGINX_VERSION}"; \
+    ./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx \
+        --conf-path=/etc/nginx/nginx.conf --pid-path=/run/nginx.pid \
+        --error-log-path=/dev/stderr --http-log-path=/dev/stdout \
+        --user=www-data --group=www-data --with-http_ssl_module \
+        --with-http_v2_module --with-http_gzip_static_module --with-threads; \
+    make -j"$(nproc)"; \
+    make install; \
+    cd /; \
+    rm -rf "/tmp/nginx-${NGINX_VERSION}" /tmp/nginx.tar.gz; \
+    apk del .build-deps
 
-RUN apk add --no-cache --verbose nginx php${PHP_V} php${PHP_V}-fpm php${PHP_V}-cli php${PHP_V}-curl php${PHP_V}-gd php${PHP_V}-mysqli php${PHP_V}-zip php${PHP_V}-pgsql php${PHP_V}-intl php${PHP_V}-xml php${PHP_V}-ldap php${PHP_V}-phar php${PHP_V}-mbstring
-
-RUN apk add --no-cache --verbose perl nano zip unzip git
-
-RUN apk add --no-cache --verbose libmemcached-dev imagemagick-dev supervisor python3 py3-pip || echo "Optional packages failed, continuing..."
+# Keep the existing php85 commands and /etc/php85 mount paths compatible.
+RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
+    ln -s /usr/local/etc/php /etc/php${PHP_V} && \
+    ln -s /usr/local/etc/php-fpm.d "$PHP_INI_DIR/php-fpm.d" && \
+    ln -s /usr/local/etc/php-fpm.conf "$PHP_INI_DIR/php-fpm.conf" && \
+    ln -s /usr/local/bin/php /usr/bin/php${PHP_V} && \
+    ln -s /usr/local/sbin/php-fpm /usr/sbin/php-fpm${PHP_V}
 
 RUN mkdir -p /run/php
 
@@ -32,25 +57,33 @@ RUN sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" ${PHP_FPM_CONF} && \
     sed -i -e "s/pm.min_spare_servers = 1/pm.min_spare_servers = 2/g" ${PHP_FPM} && \
     sed -i -e "s/pm.max_spare_servers = 3/pm.max_spare_servers = 4/g" ${PHP_FPM} && \
     sed -i -e "s/pm.max_requests = 500/pm.max_requests = 200/g" ${PHP_FPM} && \
-    sed -i -e "s/^;clear_env = no$/clear_env = no/" ${PHP_FPM}
+    sed -i -e "s/^;clear_env = no$/clear_env = no/" ${PHP_FPM} && \
+    sed -i -e "s/^user = .*/user = www-data/" ${PHP_FPM} && \
+    sed -i -e "s/^group = .*/group = www-data/" ${PHP_FPM}
 
-RUN curl -o /tmp/composer-setup.php https://getcomposer.org/installer && \
-    curl -o /tmp/composer-setup.sig https://composer.github.io/installer.sig && \
+RUN curl -fsSL -o /tmp/composer-setup.php https://getcomposer.org/installer && \
+    curl -fsSL -o /tmp/composer-setup.sig https://composer.github.io/installer.sig && \
     php${PHP_V} -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }" && \
     php${PHP_V} /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer --version=${COMPOSER_VERSION} && \
-    rm -rf /tmp/composer-setup.php
+    rm -f /tmp/composer-setup.php /tmp/composer-setup.sig
 
 COPY ./supervisord.conf /etc/supervisord.conf
 COPY ./supervisor_stdout.py /usr/bin/supervisor_stdout.py
-RUN chmod o+x /usr/bin/supervisor_stdout.py
+RUN chmod +x /usr/bin/supervisor_stdout.py
 
 RUN rm -rf /etc/nginx/conf.d/default.conf /etc/nginx/sites-enabled/default
+COPY ./nginx.conf /etc/nginx/nginx.conf
 COPY ./default.conf /etc/nginx/http.d/default.conf
 
 COPY html /usr/share/nginx/html
 
 COPY ./start.sh /start.sh
+RUN chmod +x /start.sh
 
 EXPOSE 80
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget -q --spider http://localhost/ || exit 1
+
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/start.sh"]
