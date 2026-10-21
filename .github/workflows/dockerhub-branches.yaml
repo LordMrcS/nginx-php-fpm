@@ -1,0 +1,68 @@
+name: Publish non-master branches to Docker Hub
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-push:
+    name: Publish ${{ matrix.branch }} as ${{ matrix.tag }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - branch: php82
+            tag: php82
+          - branch: php83
+            tag: php83
+          - branch: php84
+            tag: php84
+          - branch: php85
+            tag: php85
+          - branch: alpine-8.5
+            tag: alpine
+    concurrency:
+      group: dockerhub-${{ matrix.tag }}
+      cancel-in-progress: false
+    env:
+      IMAGE_TAG: ${{ matrix.tag }}
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ matrix.branch }}
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build branch image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          pull: true
+          no-cache: true
+          load: true
+          tags: nginx-php-fpm:ci-${{ matrix.tag }}
+
+      - name: Test branch image
+        run: sh tests/smoke.sh "nginx-php-fpm:ci-${IMAGE_TAG}"
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push tested branch image
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: |
+          image="${DOCKER_USERNAME}/nginx-php-fpm-ldap:${IMAGE_TAG}"
+          docker tag "nginx-php-fpm:ci-${IMAGE_TAG}" "$image"
+          docker push "$image"
