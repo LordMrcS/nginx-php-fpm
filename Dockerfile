@@ -1,4 +1,4 @@
-FROM php:8.5.12-fpm-alpine3.24
+FROM php:8.6.0RC7-fpm-alpine3.24
 
 ENV NGINX_VERSION=1.31.8
 ENV PHP_V=85
